@@ -7,15 +7,18 @@ public class TestRunner {
 		_timeoutMilliseconds = timeoutMilliseconds;
 	}
 
-	/// 异步运行测试固件中的所有测试
+	/// 异步运行测试固件中的所有测试（并行执行）
 	public async Task<TestReport> RunAsync(TestFixture fixture) {
 		if (fixture == null)
 			throw new ArgumentNullException(nameof(fixture));
 
 		var report = new TestReport(fixture.Name);
 
-		foreach (var testCase in fixture.TestCases) {
-			var result = await RunTestCaseAsync(testCase);
+		// 并行执行所有测试
+		var tasks = fixture.TestCases.Select(testCase => RunTestCaseAsync(testCase)).ToList();
+		var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+		foreach (var result in results) {
 			report.AddResult(result);
 		}
 
