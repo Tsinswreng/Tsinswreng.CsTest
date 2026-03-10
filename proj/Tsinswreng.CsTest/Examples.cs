@@ -1,5 +1,3 @@
-using Tsinswreng.CsTest.Core;
-
 namespace Tsinswreng.CsTest.Examples;
 
 /// <summary>
