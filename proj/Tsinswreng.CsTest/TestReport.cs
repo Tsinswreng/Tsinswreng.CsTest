@@ -1,34 +1,34 @@
 namespace Tsinswreng.CsTest;
-/// 测试报告汇
+/// 测试报告汇总
 public class TestReport {
-	private readonly List<TestResult> _results;
-	private readonly string _fixtureName;
+	private readonly List<TestResult> _Results;
+	private readonly str _FixtureName;
 
-	public string FixtureName => _fixtureName;
-	public IReadOnlyList<TestResult> Results => _results.AsReadOnly();
+	public str FixtureName => _FixtureName;
+	public IReadOnlyList<TestResult> Results => _Results.AsReadOnly();
 
-	public int TotalCount => _results.Count;
-	public int PassedCount => _results.Count(r => r.Status == TestResultStatus.Passed);
-	public int FailedCount => _results.Count(r => r.Status == TestResultStatus.Failed);
-	public int ErrorCount => _results.Count(r => r.Status == TestResultStatus.Error);
-	public int TimeoutCount => _results.Count(r => r.Status == TestResultStatus.Timeout);
+	public i32 TotalCount => _Results.Count;
+	public i32 PassedCount => _Results.Count(r => r.Status == TestResultStatus.Passed);
+	public i32 FailedCount => _Results.Count(r => r.Status == TestResultStatus.Failed);
+	public i32 ErrorCount => _Results.Count(r => r.Status == TestResultStatus.Error);
+	public i32 TimeoutCount => _Results.Count(r => r.Status == TestResultStatus.Timeout);
 
-	public long TotalElapsedMilliseconds => _results.Sum(r => r.ElapsedMilliseconds);
+	public long TotalElapsedMilliseconds => _Results.Sum(r => r.ElapsedMilliseconds);
 
-	public bool AllPassed => _results.All(r => r.Status == TestResultStatus.Passed);
+	public bool AllPassed => _Results.All(r => r.Status == TestResultStatus.Passed);
 
-	public TestReport(string fixtureName) {
-		_fixtureName = fixtureName ?? throw new ArgumentNullException(nameof(fixtureName));
-		_results = new List<TestResult>();
+	public TestReport(str FixtureName) {
+		_FixtureName = FixtureName ?? throw new ArgumentNullException(nameof(FixtureName));
+		_Results = new List<TestResult>();
 	}
 
 	/// 添加测试结果
-	internal void AddResult(TestResult result) {
-		_results.Add(result ?? throw new ArgumentNullException(nameof(result)));
+	internal void AddResult(TestResult Result) {
+		_Results.Add(Result ?? throw new ArgumentNullException(nameof(Result)));
 	}
 
 	/// 生成文本报告
-	public override string ToString() {
+	public override str ToString() {
 		var sb = new System.Text.StringBuilder();
 
 		sb.AppendLine();
@@ -37,7 +37,7 @@ public class TestReport {
 		sb.AppendLine("═════════════════════════════════════════════════════════════");
 		sb.AppendLine();
 
-		foreach (var result in _results) {
+		foreach (var result in _Results) {
 			sb.AppendLine(result.ToString());
 		}
 

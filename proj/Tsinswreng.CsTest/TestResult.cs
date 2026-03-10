@@ -10,24 +10,24 @@ public enum TestResultStatus {
 
 /// 单个测试的执行结果
 public class TestResult {
-	public string TestName { get; set; }
+	public str TestName { get; set; }
 
 	public TestResultStatus Status { get; set; }
 
-	public object? ReturnValue { get; set; }
+	public obj? ReturnValue { get; set; }
 
 	public Exception? Exception { get; set; }
 
 	public long ElapsedMilliseconds { get; set; }
 
-	public TestResult(string testName) {
-		TestName = testName ?? throw new ArgumentNullException(nameof(testName));
+	public TestResult(str TestName) {
+		this.TestName = TestName ?? throw new ArgumentNullException(nameof(TestName));
 		Status = TestResultStatus.Passed;
 		ElapsedMilliseconds = 0;
 	}
 
-	public override string ToString() {
-		var status = Status switch {
+	public override str ToString() {
+		var statusStr = Status switch {
 			TestResultStatus.Passed => "✓ PASSED",
 			TestResultStatus.Failed => "✗ FAILED",
 			TestResultStatus.Error => "⚠ ERROR",
@@ -35,7 +35,7 @@ public class TestResult {
 			_ => "? UNKNOWN"
 		};
 
-		var message = $"[{status}] {TestName} ({ElapsedMilliseconds}ms)";
+		var message = $"[{statusStr}] {TestName} ({ElapsedMilliseconds}ms)";
 
 		if (Exception is not null) {
 			message += $"\n  Exception: {Exception.GetType().Name}";

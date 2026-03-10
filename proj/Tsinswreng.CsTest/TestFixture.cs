@@ -2,60 +2,55 @@ namespace Tsinswreng.CsTest;
 
 /// 测试固件（测试套件容器）
 public class TestFixture {
-	private readonly string _name;
-	private readonly List<TestCase> _testCases;
+	private readonly str _Name;
+	private readonly List<TestCase> _TestCases;
 
-	public string Name => _name;
-	public IReadOnlyList<TestCase> TestCases => _testCases.AsReadOnly();
+	public str Name => _Name;
+	public IReadOnlyList<TestCase> TestCases => _TestCases.AsReadOnly();
 
-	public TestFixture(string name) {
-		_name = name ?? throw new ArgumentNullException(nameof(name));
-		_testCases = new List<TestCase>();
+	public TestFixture(str Name) {
+		_Name = Name ?? throw new ArgumentNullException(nameof(Name));
+		_TestCases = new List<TestCase>();
 	}
-
 
 	/// 注册一个测试用例（同步适配）
-	public TestFixture Register(string testName, Func<object?, object?> testFunc) {
-		if (testFunc == null)
-			throw new ArgumentNullException(nameof(testFunc));
+	public TestFixture Register(str TestName, Func<obj?, obj?> TestFunc) {
+		if (TestFunc == null)
+			throw new ArgumentNullException(nameof(TestFunc));
 
-		// 将同步函数适配为异步
-		var asyncFunc = new Func<object?, Task<object?>>(async obj => {
-			return await Task.FromResult(testFunc(obj));
+		var asyncFunc = new Func<obj?, Task<obj?>>(async Obj => {
+			return await Task.FromResult(TestFunc(Obj));
 		});
 
-		_testCases.Add(new TestCase(testName, asyncFunc));
+		_TestCases.Add(new TestCase(TestName, asyncFunc));
 		return this;
 	}
-
 
 	/// 注册一个异步测试用例
-	public TestFixture RegisterAsync(string testName, Func<object?, Task<object?>> testFunc) {
-		if (testFunc == null)
-			throw new ArgumentNullException(nameof(testFunc));
+	public TestFixture Register(str TestName, Func<obj?, Task<obj?>> TestFunc) {
+		if (TestFunc == null)
+			throw new ArgumentNullException(nameof(TestFunc));
 
-		_testCases.Add(new TestCase(testName, testFunc));
+		_TestCases.Add(new TestCase(TestName, TestFunc));
 		return this;
 	}
 
-
 	/// 注册一个异步测试用例（无返回值）
-	public TestFixture RegisterAsync(string testName, Func<object?, Task> testFunc) {
-		if (testFunc == null)
-			throw new ArgumentNullException(nameof(testFunc));
+	public TestFixture Register(str TestName, Func<obj?, Task> TestFunc) {
+		if (TestFunc == null)
+			throw new ArgumentNullException(nameof(TestFunc));
 
-		var wrappedFunc = new Func<object?, Task<object?>>(async obj => {
-			await testFunc(obj);
+		var wrappedFunc = new Func<obj?, Task<obj?>>(async Obj => {
+			await TestFunc(Obj);
 			return null;
 		});
 
-		_testCases.Add(new TestCase(testName, wrappedFunc));
+		_TestCases.Add(new TestCase(TestName, wrappedFunc));
 		return this;
 	}
 
-
 	/// 清空所有测试用例
 	public void Clear() {
-		_testCases.Clear();
+		_TestCases.Clear();
 	}
 }

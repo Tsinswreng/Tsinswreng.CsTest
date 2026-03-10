@@ -13,18 +13,18 @@ public static class BasicExample {
 			var result = 1 + 1;
 			if (result != 2)
 				throw new AssertionException($"Expected 2, got {result}");
-			return null;
+			return null!;
 		});
 
 		fixture.Register("Add 3+4=7", obj => {
 			var result = 3 + 4;
 			if (result != 7)
 				throw new AssertionException($"Expected 7, got {result}");
-			return null;
+			return null!;
 		});
 
 		// 注册异步测试
-		fixture.RegisterAsync("Async Sleep Test", async obj => {
+		fixture.Register("Async Sleep Test", async obj => {
 			await Task.Delay(100);
 			return null;
 		});
@@ -35,10 +35,10 @@ public static class BasicExample {
 		});
 
 		// 创建运行器（可设置超时时间，默认30秒）
-		var runner = new TestRunner(timeoutMilliseconds: 30000);
+		var runner = new TestRunner(TimeoutMilliseconds: 30000);
 
 		// 异步运行所有测试
-		var report = await runner.RunAsync(fixture);
+		var report = await runner.Run(fixture, default);
 
 		// 输出报告
 		Console.WriteLine(report.ToString());
