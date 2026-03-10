@@ -12,7 +12,6 @@ $$"""
 
 - {{nameof(TestCase)}}: 表示单个测试用例，包含测试名称和测试函数
 - {{nameof(TestFixture)}}: 测试固件（测试套件容器），用于注册和管理测试用例
-- {{nameof(TestRunner)}}: 测试运行器，并行执行所有测试并生成报告
 - {{nameof(TestResult)}}: 单个测试的执行结果（状态、异常、耗时）
 - {{nameof(TestReport)}}: 测试报告汇总（通过/失败/错误统计）
 
@@ -36,26 +35,7 @@ $$"""
 
 == 基础使用示例
 
-```
-var fixture = new TestFixture("Calculator Tests");
-
-fixture.Register("1+1=2", Obj => {
-    var result = 1 + 1;
-    if (result != 2) throw new Exception("Failed");
-    return null!;
-});
-
-fixture.Register("Async Test", async Obj => {
-    await Task.Delay(100);
-    return null!;
-});
-
-var runner = new TestRunner();
-var report = await runner.Run(fixture, default);
-Console.WriteLine(report.ToString());
-```
-
-== 树型组织示例
+树型组织的测试自动并行执行所有用例，无需单独调用 TestRunner：
 
 ```csharp
 // 定义测试节点
@@ -84,14 +64,14 @@ public class RootTestNode : TestNodeBase {
     }
 }
 
-// 运行测试
+// 运行全部测试
 var root = new RootTestNode();
 await TestNodeRunner.RunNode(root, default);
 
-// 或运行指定节点
+// 或运行指定节点的测试
 var repoNode = TestNodeRunner.FindNodeByName(root, "Repo Tests");
 if (repoNode is not null) {
-    await TestNodeRunner.RunNode(repoNode, default);
+    await TestNodeRunner.RunNode(repoNode, default);  // 仅运行 Repo Tests 及其子节点
 }
 ```
 

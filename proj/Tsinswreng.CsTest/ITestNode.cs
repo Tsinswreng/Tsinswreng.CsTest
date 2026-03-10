@@ -23,7 +23,7 @@ public abstract class TestNodeBase : ITestNode {
 	/// <summary>
 	/// 添加子节点
 	/// </summary>
-	protected void AddChild(ITestNode Node) {
+	public void AddChild(ITestNode Node) {
 		Children.Add(Node);
 	}
 	
