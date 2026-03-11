@@ -3,14 +3,14 @@ namespace Tsinswreng.CsTest;
 /// 测试固件（测试套件容器）
 public class TestFixture {
 	private readonly str _Name;
-	private readonly List<TestCase> _TestCases;
+	private readonly List<TestCaseOld> _TestCases;
 
 	public str Name => _Name;
-	public IReadOnlyList<TestCase> TestCases => _TestCases.AsReadOnly();
+	public IReadOnlyList<TestCaseOld> TestCases => _TestCases.AsReadOnly();
 
 	public TestFixture(str Name) {
 		_Name = Name ?? throw new ArgumentNullException(nameof(Name));
-		_TestCases = new List<TestCase>();
+		_TestCases = new List<TestCaseOld>();
 	}
 
 	/// 注册一个测试用例（同步适配）
@@ -22,7 +22,7 @@ public class TestFixture {
 			return await Task.FromResult(TestFunc(Obj));
 		});
 
-		_TestCases.Add(new TestCase(TestName, asyncFunc));
+		_TestCases.Add(new TestCaseOld(TestName, asyncFunc));
 		return this;
 	}
 
@@ -31,7 +31,7 @@ public class TestFixture {
 		if (TestFunc == null)
 			throw new ArgumentNullException(nameof(TestFunc));
 
-		_TestCases.Add(new TestCase(TestName, TestFunc));
+		_TestCases.Add(new TestCaseOld(TestName, TestFunc));
 		return this;
 	}
 
@@ -45,7 +45,7 @@ public class TestFixture {
 			return null;
 		});
 
-		_TestCases.Add(new TestCase(TestName, wrappedFunc));
+		_TestCases.Add(new TestCaseOld(TestName, wrappedFunc));
 		return this;
 	}
 

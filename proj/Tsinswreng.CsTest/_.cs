@@ -10,14 +10,14 @@ $$"""
 #Descr[
 == 核心类
 
-- {{nameof(TestCase)}}: 表示单个测试用例，包含测试名称和测试函数
+- {{nameof(TestCaseOld)}}: 表示单个测试用例，包含测试名称和测试函数
 - {{nameof(TestFixture)}}: 测试固件（测试套件容器），用于注册和管理测试用例
 - {{nameof(TestResult)}}: 单个测试的执行结果（状态、异常、耗时）
 - {{nameof(TestReport)}}: 测试报告汇总（通过/失败/错误统计）
 
 == 树型节点系统
 
-- {{nameof(ITestNode)}}: 测试树节点接口，支持递归注册和运行
+- {{nameof(ITestNodeOld)}}: 测试树节点接口，支持递归注册和运行
 - {{nameof(TestNodeBase)}}: 测试树节点基类，提供子节点管理和递归注册
 - {{nameof(TestGroupNode)}}: 容器节点，只用于组织子节点
 - {{nameof(TestNodeRunner)}}: 节点运行器，支持运行指定节点或查找节点

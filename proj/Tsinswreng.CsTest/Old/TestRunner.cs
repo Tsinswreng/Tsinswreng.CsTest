@@ -26,7 +26,7 @@ public class TestRunner {
 	}
 
 	/// 执行单个测试用例
-	private async Task<TestResult> RunTestCaseAsync(TestCase TestCase, CT Ct) {
+	private async Task<TestResult> RunTestCaseAsync(TestCaseOld TestCase, CT Ct) {
 		var result = new TestResult(TestCase.Name);
 		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 

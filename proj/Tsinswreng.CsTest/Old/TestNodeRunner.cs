@@ -7,7 +7,7 @@ public static class TestNodeRunner {
 	/// <summary>
 	/// 运行指定的测试节点
 	/// </summary>
-	public static async Task<obj?> RunNode(ITestNode Node, CT Ct) {
+	public static async Task<obj?> RunNode(ITestNodeOld Node, CT Ct) {
 		var fixture = new TestFixture(Node.Name);
 		await Node.RegisterTests(fixture, Ct);
 		
@@ -25,7 +25,7 @@ public static class TestNodeRunner {
 	/// <summary>
 	/// 递归查找指定名称的节点
 	/// </summary>
-	public static ITestNode? FindNodeByName(ITestNode Root, str TargetName) {
+	public static ITestNodeOld? FindNodeByName(ITestNodeOld Root, str TargetName) {
 		if (Root.Name == TargetName) {
 			return Root;
 		}
