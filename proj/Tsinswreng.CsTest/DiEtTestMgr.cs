@@ -60,16 +60,24 @@ public static class ExtnDiEtTestMgr{
 		[Doc(@$"Init {nameof(IServiceCollection)} and {nameof(IServiceProvider)}
 		you should provide the two args by yourself, then better call this at entrance
 		")]
-		public void InitSvc(
+		public IServiceProvider InitSvc(
 			IServiceCollection SvcColct
 			,IServiceProvider SvcProvdr
 		){
 			foreach(var fn in z.DiFns){
 				fn(SvcColct);
 			}
+			SvcProvdr = SvcColct.BuildServiceProvider();
 			foreach(var fn in z.RegisterTestFns){
 				fn(SvcProvdr, z.TestNode);
 			}
+			return SvcProvdr;
+		}
+
+		[Doc(@$"Init {nameof(IServiceCollection)} then build and return {nameof(IServiceProvider)}")]
+		public IServiceProvider InitSvc(IServiceCollection SvcColct){
+			IServiceProvider SvcProvdr = SvcColct.BuildServiceProvider();
+			return z.InitSvc(SvcColct, SvcProvdr);
 		}
 	}
 }
