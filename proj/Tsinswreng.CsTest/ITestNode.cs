@@ -31,6 +31,7 @@ public class TestNode : ITestNode{
 
 public static class ExtnITestNode{
 	extension(ITestNode z){
+		[Doc("Make a new child of self")]
 		public ITestNode NewChild(){
 			var R = new TestNode();
 			z.Children.Add(R);
