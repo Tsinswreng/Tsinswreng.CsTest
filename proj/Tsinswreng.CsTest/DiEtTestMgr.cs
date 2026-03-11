@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Tsinswreng.CsCore;
@@ -17,6 +18,9 @@ public interface IDiEtTestMgr:ITester{
 }
 
 public abstract class DiEtTestMgr:IDiEtTestMgr{
+	public DiEtTestMgr(){
+		this.RegisterTestsInto(this.TestNode);
+	}
 	public ITestNode TestNode{get;set;} = new TestNode();
 	public IList<Func<IServiceCollection, nil>> DiFns{get;set;} = [];
 	public IList<Func<IServiceProvider, ITestNode, nil>> RegisterTestFns{get;set;} = [];
@@ -51,6 +55,21 @@ public static class ExtnDiEtTestMgr{
 			SubMgr.TestNode = z.TestNode.NewChild();
 			z.DiFns.AddRange(SubMgr.DiFns);
 			z.RegisterTestFns.AddRange(SubMgr.RegisterTestFns);
+		}
+		
+		[Doc(@$"Init {nameof(IServiceCollection)} and {nameof(IServiceProvider)}
+		you should provide the two args by yourself, then better call this at entrance
+		")]
+		public void InitSvc(
+			IServiceCollection SvcColct
+			,IServiceProvider SvcProvdr
+		){
+			foreach(var fn in z.DiFns){
+				fn(SvcColct);
+			}
+			foreach(var fn in z.RegisterTestFns){
+				fn(SvcProvdr, z.TestNode);
+			}
 		}
 	}
 }
