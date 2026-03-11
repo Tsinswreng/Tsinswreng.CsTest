@@ -30,6 +30,16 @@ public sealed class TestRunSummary{
 	public IList<TestCaseRunResult> Results { get; set; } = [];
 }
 
+public sealed class TestRunFailedException : Exception{
+	public TestRunSummary Summary { get; }
+
+	public TestRunFailedException(TestRunSummary summary)
+		: base($"Test run failed. Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}")
+	{
+		Summary = summary;
+	}
+}
+
 public interface ITreeTestExecutor{
 	public Task<TestRunSummary> RunAsync(
 		ITestNode root,
@@ -120,12 +130,12 @@ public sealed class TreeTestExecutor : ITreeTestExecutor{
 		IList<WorkItem> output,
 		ref int order
 	){
-		if(node.Data is not nil){
+		if(node.Data is ITestCase testCase){
 			output.Add(new WorkItem{
 				Order = order++,
 				NodePath = path,
 				Node = node,
-				TestCase = node.Data,
+				TestCase = testCase,
 			});
 		}
 
@@ -137,13 +147,40 @@ public sealed class TreeTestExecutor : ITreeTestExecutor{
 
 public static class ExtnTreeTestExecutor{
 	extension(ITestNode z){
-		[Doc("Run all test cases under current tree root (parallel by default)")]
-		public Task<TestRunSummary> RunTests(){
-			obj? Arg = default;
-			OptTreeTestExecutor? Opt = default;
-			CT Ct = default;
+		[Doc("Run all test cases under current tree root (parallel by default), no default consume")]
+		public Task<TestRunSummary> RunTests(
+			obj? Arg = default,
+			OptTreeTestExecutor? Opt = default,
+			CT Ct = default
+		){
 			ITreeTestExecutor executor = new TreeTestExecutor();
 			return executor.RunAsync(z, Arg, Opt, Ct);
+		}
+
+		[Doc("Run tests then do default consume: print summary and throw when failed")]
+		public async Task<TestRunSummary> RunEtPrint(
+			obj? Arg = default,
+			OptTreeTestExecutor? Opt = default,
+			CT Ct = default,
+			bool ThrowOnFailed = true
+		){
+			var summary = await z.RunTests(Arg, Opt, Ct);
+			WriteSummary(summary);
+			if(ThrowOnFailed && summary.Failed > 0){
+				throw new TestRunFailedException(summary);
+			}
+			return summary;
+		}
+
+		private static void WriteSummary(TestRunSummary summary){
+			Console.WriteLine($"[CsTest] Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}, Elapsed={summary.Elapsed}");
+			foreach(var result in summary.Results.OrderBy(x => x.Order)){
+				var status = result.IsPassed ? "PASS" : "FAIL";
+				Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.Name} ({result.Elapsed})");
+				if(result.Exception is not null){
+					Console.WriteLine(result.Exception.ToString());
+				}
+			}
 		}
 	}
 }
