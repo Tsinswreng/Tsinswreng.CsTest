@@ -7,8 +7,14 @@ namespace Tsinswreng.CsTest;
 
 [Doc(@$"DependencyInjection and Test Manager")]
 public interface IDiEtTestMgr:ITester{
-	public IDictionary<str, ITestNode> UniqName_TestNode{get;set;}
-	public IDictionary<Type, ITestNode> TesterType_TestNode{get;set;}
+	[Doc(@$"the value list should only contain 0 or 1 element,
+	designed as IList is for future extension
+	")]
+	public IDictionary<str, IList<ITestNode>> UniqName_TestNode{get;set;}
+	[Doc(@$"the value list should only contain 0 or 1 element,
+	designed as IList is for future extension
+	")]
+	public IDictionary<Type, IList<ITestNode>> TesterType_TestNode{get;set;}
 	[Doc(@$"Root TestNode of the (Sub)Tree")]
 	public ITestNode TestNode{get;set;}
 	[Doc(@$"Functions to register types into {nameof(IServiceCollection)}")]
@@ -23,8 +29,8 @@ public abstract class DiEtTestMgr:IDiEtTestMgr{
 	public DiEtTestMgr(){
 		this.RegisterTestsInto(this.TestNode);
 	}
-	public IDictionary<str, ITestNode> UniqName_TestNode{get;set;} = new Dictionary<str, ITestNode>();
-	public IDictionary<Type, ITestNode> TesterType_TestNode{get;set;} = new Dictionary<Type, ITestNode>();
+	public IDictionary<str, IList<ITestNode>> UniqName_TestNode{get;set;} = new Dictionary<str, IList<ITestNode>>();
+	public IDictionary<Type, IList<ITestNode>> TesterType_TestNode{get;set;} = new Dictionary<Type, IList<ITestNode>>();
 	public ITestNode TestNode{get;set;} = new TestNode();
 	public IList<Func<IServiceCollection, nil>> DiFns{get;set;} = [];
 	public IList<Func<IServiceProvider, ITestNode, nil>> RegisterTestFns{get;set;} = [];
@@ -85,11 +91,11 @@ public static class ExtnDiEtTestMgr{
 		}
 		
 		public ITestNode GetNodeByName(str UniqName){
-			return z.UniqName_TestNode[UniqName];
+			throw new NotImplementedException();
 		}
 		
 		public ITestNode GetNodeByTesterType(Type TesterType){
-			return z.TesterType_TestNode[TesterType];
+			throw new NotImplementedException();
 		}
 	}
 }
