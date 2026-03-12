@@ -66,7 +66,7 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		Opt ??= new OptTestExecutor();
 
 		var startedAt = DateTimeOffset.Now;
-		var workItems = CollectWorkItems(Nodes);
+		var workStages = CollectWorkStages(Nodes);
 		var results = new ConcurrentBag<TestCaseRunResult>();
 		var parallelOptions = new ParallelOptions{
 			MaxDegreeOfParallelism = Opt.MaxDegreeOfParallelism <= 0
@@ -74,71 +74,29 @@ public sealed class TreeTestExecutor : ITestExecutor{
 				: Opt.MaxDegreeOfParallelism,
 		};
 
-		return RunCore(startedAt, workItems, results, parallelOptions, Opt.Arg, Opt.IsParallel);
+		return RunCore(startedAt, workStages, results, parallelOptions, Opt.Arg, Opt.IsParallel);
 	}
 
 	private static async Task<TestRunSummary> RunCore(
 		DateTimeOffset startedAt,
-		IList<WorkItem> workItems,
+		IList<IList<WorkItem>> workStages,
 		ConcurrentBag<TestCaseRunResult> results,
 		ParallelOptions parallelOptions,
 		obj? arg,
 		bool isParallel
 	){
 		if(isParallel){
-		await Parallel.ForEachAsync(workItems, parallelOptions, async (item, _) => {
-			var begin = DateTimeOffset.Now;
-			try{
-				await item.TestCase.FnTest(arg);
-				results.Add(new TestCaseRunResult{
-					Order = item.Order,
-					NodePath = item.NodePath,
-					Node = item.Node,
-					TestCase = item.TestCase,
-					IsPassed = true,
-					Exception = null,
-					Elapsed = DateTimeOffset.Now - begin,
+			foreach(var stage in workStages){
+				await Parallel.ForEachAsync(stage, parallelOptions, async (item, _) => {
+					await ExecuteItem(item, results, arg);
 				});
 			}
-			catch(Exception ex){
-				results.Add(new TestCaseRunResult{
-					Order = item.Order,
-					NodePath = item.NodePath,
-					Node = item.Node,
-					TestCase = item.TestCase,
-					IsPassed = false,
-					Exception = ex,
-					Elapsed = DateTimeOffset.Now - begin,
-				});
-			}
-		});
 		}
 		else{
-			foreach(var item in workItems){
-				parallelOptions.CancellationToken.ThrowIfCancellationRequested();
-				var begin = DateTimeOffset.Now;
-				try{
-					await item.TestCase.FnTest(arg);
-					results.Add(new TestCaseRunResult{
-						Order = item.Order,
-						NodePath = item.NodePath,
-						Node = item.Node,
-						TestCase = item.TestCase,
-						IsPassed = true,
-						Exception = null,
-						Elapsed = DateTimeOffset.Now - begin,
-					});
-				}
-				catch(Exception ex){
-					results.Add(new TestCaseRunResult{
-						Order = item.Order,
-						NodePath = item.NodePath,
-						Node = item.Node,
-						TestCase = item.TestCase,
-						IsPassed = false,
-						Exception = ex,
-						Elapsed = DateTimeOffset.Now - begin,
-					});
+			foreach(var stage in workStages){
+				foreach(var item in stage){
+					parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+					await ExecuteItem(item, results, arg);
 				}
 			}
 		}
@@ -157,13 +115,109 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		};
 	}
 
-	private static IList<WorkItem> CollectWorkItems(IList<ITestNode> nodes){
-		var order = 0;
-		var output = new List<WorkItem>();
-		for(var i = 0; i < nodes.Count; i++){
-			Dfs(nodes[i], $"{i}", output, ref order);
+	private static async Task ExecuteItem(
+		WorkItem item,
+		ConcurrentBag<TestCaseRunResult> results,
+		obj? arg
+	){
+		var begin = DateTimeOffset.Now;
+		try{
+			await item.TestCase.FnTest(arg);
+			results.Add(new TestCaseRunResult{
+				Order = item.Order,
+				NodePath = item.NodePath,
+				Node = item.Node,
+				TestCase = item.TestCase,
+				IsPassed = true,
+				Exception = null,
+				Elapsed = DateTimeOffset.Now - begin,
+			});
 		}
+		catch(Exception ex){
+			results.Add(new TestCaseRunResult{
+				Order = item.Order,
+				NodePath = item.NodePath,
+				Node = item.Node,
+				TestCase = item.TestCase,
+				IsPassed = false,
+				Exception = ex,
+				Elapsed = DateTimeOffset.Now - begin,
+			});
+		}
+	}
+
+	private static IList<IList<WorkItem>> CollectWorkStages(IList<ITestNode> nodes){
+		var order = 0;
+		var output = new List<IList<WorkItem>>();
+		var nodeStages = new List<IList<WorkItem>>();
+		for(var i = 0; i < nodes.Count; i++){
+			nodeStages.AddRange(CollectNodeStages(nodes[i], $"{i}", ref order));
+		}
+
+		for(var i = 0; i < nodeStages.Count; i++){
+			EnsureStage(output, i);
+			for(var j = 0; j < nodeStages[i].Count; j++){
+				output[i].Add(nodeStages[i][j]);
+			}
+		}
+
 		return output;
+	}
+
+	private static IList<IList<WorkItem>> CollectNodeStages(
+		ITestNode node,
+		str path,
+		ref int order
+	){
+		var output = new List<IList<WorkItem>>();
+
+		if(node.Data is ITestCase testCase){
+			output.Add([
+				new WorkItem{
+					Order = order++,
+					NodePath = path,
+					Node = node,
+					TestCase = testCase,
+				}
+			]);
+		}
+
+		if(node.Children.Count == 0){
+			return output;
+		}
+
+		if(node.Ordered){
+			for(var i = 0; i < node.Children.Count; i++){
+				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order);
+				for(var j = 0; j < childStages.Count; j++){
+					output.Add(childStages[j]);
+				}
+			}
+		}
+		else{
+			var mergedChildStages = new List<IList<WorkItem>>();
+			for(var i = 0; i < node.Children.Count; i++){
+				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order);
+				for(var j = 0; j < childStages.Count; j++){
+					EnsureStage(mergedChildStages, j);
+					for(var k = 0; k < childStages[j].Count; k++){
+						mergedChildStages[j].Add(childStages[j][k]);
+					}
+				}
+			}
+
+			for(var i = 0; i < mergedChildStages.Count; i++){
+				output.Add(mergedChildStages[i]);
+			}
+		}
+
+		return output;
+	}
+
+	private static void EnsureStage(IList<IList<WorkItem>> stages, int index){
+		while(stages.Count <= index){
+			stages.Add([]);
+		}
 	}
 
 	private static void Dfs(
