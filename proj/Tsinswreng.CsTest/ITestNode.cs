@@ -26,6 +26,9 @@ public interface ITestNode{
 	
 }
 
+public interface ITesterNode:ITestNode{
+	public Type? TesterType{get;set;}
+}
 
 public class TestNode : ITestNode{
 	public str UniqName{get;set;} = U128Id.NewUlid().ToLow64Base();
@@ -34,11 +37,24 @@ public class TestNode : ITestNode{
 	public IList<ITestNode> Parents {get;set;} = [];
 }
 
+public class TesterNode : TestNode, ITesterNode{
+	public Type? TesterType{get;set;}
+}
+
 public static class ExtnITestNode{
 	extension(ITestNode z){
 		[Doc("Make a new child of self")]
-		public ITestNode NewChild(){
-			var R = new TestNode();
+		public ITestNode NewChild(str? UniqName = null){
+			var R = new TestNode(){UniqName = UniqName ?? U128Id.NewUlid().ToLow64Base()};
+			z.Children.Add(R);
+			R.Parents.Add(z);
+			return R;
+		}
+		public ITestNode NewChild<T>(str? UniqName = null){
+			var R = new TesterNode(){
+				UniqName = UniqName ?? U128Id.NewUlid().ToLow64Base()
+				,TesterType = typeof(T)
+			};
 			z.Children.Add(R);
 			R.Parents.Add(z);
 			return R;

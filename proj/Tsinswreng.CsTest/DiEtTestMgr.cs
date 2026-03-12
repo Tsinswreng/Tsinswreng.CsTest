@@ -34,10 +34,10 @@ public static class ExtnDiEtTestMgr{
 		Register an impl class of {{nameof(ITester)}}
 		both into {{nameof(ServiceCollection)}} and {{nameof(TestNode)}}
 		""")]
-		public void RegisterTesterType<
+		public void RegisterTester<
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 			T
-		>()
+		>(str? NewNodeUniqName = null)
 			where T:class, ITester
 		{
 			z.DiFns.Add((SvcC)=>{
@@ -46,7 +46,7 @@ public static class ExtnDiEtTestMgr{
 			});
 			z.RegisterTestFns.Add((SvcP, TestNode)=>{
 				ITester t = SvcP.GetRequiredService<T>();
-				t.RegisterTestsInto(TestNode.NewChild());
+				t.RegisterTestsInto(TestNode.NewChild(NewNodeUniqName));
 				return NIL;
 			});
 		}

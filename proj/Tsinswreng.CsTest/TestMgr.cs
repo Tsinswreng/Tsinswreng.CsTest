@@ -15,9 +15,9 @@ this can help you simplify your code
 			Type TesterType
 			,Type TesteeType
 		){
-			return (str Name, FnTest Fn) => {
+			return (str UniqName, FnTest Fn) => {
 				var Case = new TestCase{
-					UniqName = Name,
+					UniqName = UniqName,
 					TesterType = TesterType,
 					TesteeType = TesteeType,
 					FnTest = Fn,
