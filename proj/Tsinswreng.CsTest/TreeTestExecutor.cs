@@ -273,13 +273,34 @@ public static class ExtnTreeTestExecutor{
 	}
 
 	private static void WriteSummary(TestRunSummary summary){
-		Console.WriteLine($"[CsTest] Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}, Elapsed={summary.Elapsed}");
+		WriteWithColor("[CsTest] ", ConsoleColor.Cyan);
+		Console.Write($"Total={summary.Total}, ");
+		WriteWithColor($"Passed={summary.Passed}", summary.Passed > 0 ? ConsoleColor.Green : Console.ForegroundColor);
+		Console.Write(", ");
+		WriteWithColor($"Failed={summary.Failed}", summary.Failed > 0 ? ConsoleColor.Red : Console.ForegroundColor);
+		Console.WriteLine($", Elapsed={summary.Elapsed}");
+
 		foreach(var result in summary.Results.OrderBy(x => x.Order)){
 			var status = result.IsPassed ? "PASS" : "FAIL";
-			Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
+			WriteWithColor($"[{status}]", result.IsPassed ? ConsoleColor.Green : ConsoleColor.Red);
+			Console.WriteLine($" {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
 			if(result.Exception is not null){
-				Console.WriteLine(result.Exception.ToString());
+				WriteLineWithColor(result.Exception.ToString(), ConsoleColor.DarkRed);
 			}
 		}
+	}
+
+	private static void WriteWithColor(str text, ConsoleColor color){
+		var oldColor = Console.ForegroundColor;
+		Console.ForegroundColor = color;
+		Console.Write(text);
+		Console.ForegroundColor = oldColor;
+	}
+
+	private static void WriteLineWithColor(str text, ConsoleColor color){
+		var oldColor = Console.ForegroundColor;
+		Console.ForegroundColor = color;
+		Console.WriteLine(text);
+		Console.ForegroundColor = oldColor;
 	}
 }
