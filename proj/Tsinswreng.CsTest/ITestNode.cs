@@ -65,6 +65,7 @@ public static class ExtnITestNode{
 	this can help you simplify your code
 	,without duplicately passing the same `{nameof(Type)}`
 	")]
+	[Obsolete(@$"use {nameof(MkTestFnRegister)}")]
 		public Func<
 			str, FnTest, nil
 		> MkFnRegisterTest(
@@ -86,12 +87,16 @@ public static class ExtnITestNode{
 			};
 		}
 		
+		[Doc(@$"Make a register to register `{nameof(FnTest)}`.
+		this can help you simplify your code
+		,without duplicately passing the same `{nameof(Type)}`
+		")]
 		public ITestFnRegister MkTestFnRegister(
 			Type TesterType
 			,Type TesteeType
 			,str UniqNamePrefix = ""
 		){
-			
+			return new TestFnRegister(z, TesterType, TesteeType, UniqNamePrefix);
 		}
 	}
 }
