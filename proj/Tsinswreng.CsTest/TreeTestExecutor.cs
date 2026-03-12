@@ -3,12 +3,6 @@ using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsTest;
 
-[Obsolete("配置項不存")]
-public sealed class OptTreeTestExecutor{
-	[Doc("Default is Environment.ProcessorCount")]
-	public int MaxDegreeOfParallelism { get; set; } = Environment.ProcessorCount;
-}
-
 public sealed class TestCaseRunResult{
 	public required int Order { get; set; }
 	public required str NodePath { get; set; }
@@ -48,14 +42,6 @@ public class OptTestExecutor{
 }
 
 public interface ITestExecutor{
-	[Obsolete("參數太多")]
-	public Task<TestRunSummary> Run(
-		ITestNode root,
-		obj? arg = null,
-		OptTreeTestExecutor? options = null,
-		CancellationToken cancellationToken = default
-	);
-	
 	public Task<TestRunSummary> Run(
 		IList<ITestNode> Nodes
 		,OptTestExecutor? Opt
@@ -90,28 +76,6 @@ public sealed class TreeTestExecutor : ITestExecutor{
 
 		return RunCore(startedAt, workItems, results, parallelOptions, Opt.Arg, Opt.IsParallel);
 	}
-
-	#pragma warning disable CS0612, CS0618
-	public async Task<TestRunSummary> Run(
-		ITestNode root,
-		obj? arg = null,
-		OptTreeTestExecutor? options = null,
-		CancellationToken cancellationToken = default
-	){
-		ArgumentNullException.ThrowIfNull(root);
-		options ??= new OptTreeTestExecutor();
-		var parallelOptions = new ParallelOptions{
-			CancellationToken = cancellationToken,
-			MaxDegreeOfParallelism = options.MaxDegreeOfParallelism <= 0
-				? Environment.ProcessorCount
-				: options.MaxDegreeOfParallelism,
-		};
-		var startedAt = DateTimeOffset.Now;
-		var workItems = CollectWorkItems(root);
-		var results = new ConcurrentBag<TestCaseRunResult>();
-		return await RunCore(startedAt, workItems, results, parallelOptions, arg, true);
-	}
-	#pragma warning restore CS0612, CS0618
 
 	private static async Task<TestRunSummary> RunCore(
 		DateTimeOffset startedAt,
@@ -191,10 +155,6 @@ public sealed class TreeTestExecutor : ITestExecutor{
 			Failed = failed,
 			Results = ordered,
 		};
-	}
-
-	private static IList<WorkItem> CollectWorkItems(ITestNode root){
-		return CollectWorkItems([root]);
 	}
 
 	private static IList<WorkItem> CollectWorkItems(IList<ITestNode> nodes){
