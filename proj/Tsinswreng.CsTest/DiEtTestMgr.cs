@@ -7,6 +7,8 @@ namespace Tsinswreng.CsTest;
 
 [Doc(@$"DependencyInjection and Test Manager")]
 public interface IDiEtTestMgr:ITester{
+	public IDictionary<str, ITestNode> UniqName_TestNode{get;set;}
+	public IDictionary<Type, ITestNode> TesterType_TestNode{get;set;}
 	[Doc(@$"Root TestNode of the (Sub)Tree")]
 	public ITestNode TestNode{get;set;}
 	[Doc(@$"Functions to register types into {nameof(IServiceCollection)}")]
@@ -21,6 +23,8 @@ public abstract class DiEtTestMgr:IDiEtTestMgr{
 	public DiEtTestMgr(){
 		this.RegisterTestsInto(this.TestNode);
 	}
+	public IDictionary<str, ITestNode> UniqName_TestNode{get;set;} = new Dictionary<str, ITestNode>();
+	public IDictionary<Type, ITestNode> TesterType_TestNode{get;set;} = new Dictionary<Type, ITestNode>();
 	public ITestNode TestNode{get;set;} = new TestNode();
 	public IList<Func<IServiceCollection, nil>> DiFns{get;set;} = [];
 	public IList<Func<IServiceProvider, ITestNode, nil>> RegisterTestFns{get;set;} = [];
@@ -78,6 +82,14 @@ public static class ExtnDiEtTestMgr{
 		public IServiceProvider InitSvc(IServiceCollection SvcColct){
 			IServiceProvider SvcProvdr = SvcColct.BuildServiceProvider();
 			return z.InitSvc(SvcColct, SvcProvdr);
+		}
+		
+		public ITestNode GetNodeByName(str UniqName){
+			return z.UniqName_TestNode[UniqName];
+		}
+		
+		public ITestNode GetNodeByTesterType(Type TesterType){
+			return z.TesterType_TestNode[TesterType];
 		}
 	}
 }
