@@ -5,7 +5,12 @@ using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsTest;
 
-[Doc(@$"DependencyInjection and Test Manager")]
+[Doc(@$"DependencyInjection and Test Manager.
+Own a {nameof(TestNode)}
+Do not own {nameof(IServiceCollection)} and {nameof(IServiceProvider)}.
+each test csproj should have one {nameof(IDiEtTestMgr)}.
+{nameof(IDiEtTestMgr)} itself can be registered by other {nameof(IDiEtTestMgr)}
+")]
 public interface IDiEtTestMgr:ITester{
 	[Doc(@$"the value list should only contain 0 or 1 element,
 	designed as IList is for future extension
