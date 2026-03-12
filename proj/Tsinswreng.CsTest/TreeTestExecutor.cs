@@ -72,6 +72,26 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		public required ITestCase TestCase { get; set; }
 	}
 
+	public Task<TestRunSummary> Run(
+		IList<ITestNode> Nodes,
+		OptTestExecutor? Opt
+	){
+		ArgumentNullException.ThrowIfNull(Nodes);
+		Opt ??= new OptTestExecutor();
+
+		var startedAt = DateTimeOffset.Now;
+		var workItems = CollectWorkItems(Nodes);
+		var results = new ConcurrentBag<TestCaseRunResult>();
+		var parallelOptions = new ParallelOptions{
+			MaxDegreeOfParallelism = Opt.MaxDegreeOfParallelism <= 0
+				? Environment.ProcessorCount
+				: Opt.MaxDegreeOfParallelism,
+		};
+
+		return RunCore(startedAt, workItems, results, parallelOptions, Opt.Arg, Opt.IsParallel);
+	}
+
+	#pragma warning disable CS0612, CS0618
 	public async Task<TestRunSummary> Run(
 		ITestNode root,
 		obj? arg = null,
@@ -80,17 +100,28 @@ public sealed class TreeTestExecutor : ITestExecutor{
 	){
 		ArgumentNullException.ThrowIfNull(root);
 		options ??= new OptTreeTestExecutor();
-
-		var startedAt = DateTimeOffset.Now;
-		var workItems = CollectWorkItems(root);
-		var results = new ConcurrentBag<TestCaseRunResult>();
 		var parallelOptions = new ParallelOptions{
 			CancellationToken = cancellationToken,
 			MaxDegreeOfParallelism = options.MaxDegreeOfParallelism <= 0
 				? Environment.ProcessorCount
 				: options.MaxDegreeOfParallelism,
 		};
+		var startedAt = DateTimeOffset.Now;
+		var workItems = CollectWorkItems(root);
+		var results = new ConcurrentBag<TestCaseRunResult>();
+		return await RunCore(startedAt, workItems, results, parallelOptions, arg, true);
+	}
+	#pragma warning restore CS0612, CS0618
 
+	private static async Task<TestRunSummary> RunCore(
+		DateTimeOffset startedAt,
+		IList<WorkItem> workItems,
+		ConcurrentBag<TestCaseRunResult> results,
+		ParallelOptions parallelOptions,
+		obj? arg,
+		bool isParallel
+	){
+		if(isParallel){
 		await Parallel.ForEachAsync(workItems, parallelOptions, async (item, _) => {
 			var begin = DateTimeOffset.Now;
 			try{
@@ -117,6 +148,36 @@ public sealed class TreeTestExecutor : ITestExecutor{
 				});
 			}
 		});
+		}
+		else{
+			foreach(var item in workItems){
+				parallelOptions.CancellationToken.ThrowIfCancellationRequested();
+				var begin = DateTimeOffset.Now;
+				try{
+					await item.TestCase.FnTest(arg);
+					results.Add(new TestCaseRunResult{
+						Order = item.Order,
+						NodePath = item.NodePath,
+						Node = item.Node,
+						TestCase = item.TestCase,
+						IsPassed = true,
+						Exception = null,
+						Elapsed = DateTimeOffset.Now - begin,
+					});
+				}
+				catch(Exception ex){
+					results.Add(new TestCaseRunResult{
+						Order = item.Order,
+						NodePath = item.NodePath,
+						Node = item.Node,
+						TestCase = item.TestCase,
+						IsPassed = false,
+						Exception = ex,
+						Elapsed = DateTimeOffset.Now - begin,
+					});
+				}
+			}
+		}
 
 		var ordered = results.OrderBy(x => x.Order).ToList();
 		var passed = ordered.Count(x => x.IsPassed);
@@ -133,9 +194,15 @@ public sealed class TreeTestExecutor : ITestExecutor{
 	}
 
 	private static IList<WorkItem> CollectWorkItems(ITestNode root){
+		return CollectWorkItems([root]);
+	}
+
+	private static IList<WorkItem> CollectWorkItems(IList<ITestNode> nodes){
 		var order = 0;
 		var output = new List<WorkItem>();
-		Dfs(root, "0", output, ref order);
+		for(var i = 0; i < nodes.Count; i++){
+			Dfs(nodes[i], $"{i}", output, ref order);
+		}
 		return output;
 	}
 
@@ -161,40 +228,43 @@ public sealed class TreeTestExecutor : ITestExecutor{
 }
 
 public static class ExtnTreeTestExecutor{
-	extension(ITestNode z){
+	extension(ITestExecutor z){
 		[Doc("Run all test cases under current tree root (parallel by default), no default consume")]
 		public Task<TestRunSummary> RunTests(
+			ITestNode Root,
 			obj? Arg = default,
-			OptTreeTestExecutor? Opt = default,
-			CT Ct = default
+			OptTestExecutor? Opt = default
 		){
-			ITestExecutor executor = new TreeTestExecutor();
-			return executor.Run(z, Arg, Opt, Ct);
+			Opt ??= new OptTestExecutor();
+			Opt.Arg = Arg;
+			return z.Run([Root], Opt);
 		}
 
 		[Doc("Run tests then do default consume: print summary and throw when failed")]
 		public async Task<TestRunSummary> RunEtPrint(
+			ITestNode Root,
 			obj? Arg = default,
-			OptTreeTestExecutor? Opt = default,
-			CT Ct = default,
+			OptTestExecutor? Opt = default,
 			bool ThrowOnFailed = true
 		){
-			var summary = await z.RunTests(Arg, Opt, Ct);
+			Opt ??= new OptTestExecutor();
+			Opt.Arg = Arg;
+			var summary = await z.Run([Root], Opt);
 			WriteSummary(summary);
 			if(ThrowOnFailed && summary.Failed > 0){
 				throw new TestRunFailedException(summary);
 			}
 			return summary;
 		}
+	}
 
-		private static void WriteSummary(TestRunSummary summary){
-			Console.WriteLine($"[CsTest] Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}, Elapsed={summary.Elapsed}");
-			foreach(var result in summary.Results.OrderBy(x => x.Order)){
-				var status = result.IsPassed ? "PASS" : "FAIL";
-				Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
-				if(result.Exception is not null){
-					Console.WriteLine(result.Exception.ToString());
-				}
+	private static void WriteSummary(TestRunSummary summary){
+		Console.WriteLine($"[CsTest] Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}, Elapsed={summary.Elapsed}");
+		foreach(var result in summary.Results.OrderBy(x => x.Order)){
+			var status = result.IsPassed ? "PASS" : "FAIL";
+			Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
+			if(result.Exception is not null){
+				Console.WriteLine(result.Exception.ToString());
 			}
 		}
 	}
