@@ -14,10 +14,11 @@ this can help you simplify your code
 		> MkFnRegisterTest(
 			Type TesterType
 			,Type TesteeType
+			,str UniqNamePrefix = ""
 		){
 			return (str UniqName, FnTest Fn) => {
 				var Case = new TestCase{
-					UniqName = UniqName,
+					UniqName = UniqNamePrefix+UniqName,
 					TesterType = TesterType,
 					TesteeType = TesteeType,
 					FnTest = Fn,
