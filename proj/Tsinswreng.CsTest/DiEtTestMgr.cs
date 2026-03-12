@@ -55,8 +55,22 @@ public static class ExtnDiEtTestMgr{
 				return NIL;
 			});
 			z.RegisterTestFns.Add((SvcP, TestNode)=>{
+				if(z.TesterType_TestNode.ContainsKey(typeof(T))){
+					throw new InvalidOperationException(
+						$"Duplicated tester type: {typeof(T)}"
+					);
+				}
+				if(NewNodeUniqName != null && z.UniqName_TestNode.ContainsKey(NewNodeUniqName)){
+					throw new InvalidOperationException($"Duplicated test node uniq name: {NewNodeUniqName}");
+				}
 				ITester t = SvcP.GetRequiredService<T>();
-				t.RegisterTestsInto(TestNode.NewChild(NewNodeUniqName));
+				ITestNode node = TestNode.NewChild<T>(NewNodeUniqName);
+				if(z.UniqName_TestNode.ContainsKey(node.UniqName)){
+					throw new InvalidOperationException($"Duplicated test node uniq name: {node.UniqName}");
+				}
+				z.UniqName_TestNode.Add(node.UniqName, [node]);
+				z.TesterType_TestNode.Add(typeof(T), [node]);
+				t.RegisterTestsInto(node);
 				return NIL;
 			});
 		}
@@ -91,11 +105,17 @@ public static class ExtnDiEtTestMgr{
 		}
 		
 		public ITestNode GetNodeByName(str UniqName){
-			throw new NotImplementedException();
+			if(!z.UniqName_TestNode.TryGetValue(UniqName, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by uniq name: {UniqName}");
+			}
+			return nodes[0];
 		}
 		
 		public ITestNode GetNodeByTesterType(Type TesterType){
-			throw new NotImplementedException();
+			if(!z.TesterType_TestNode.TryGetValue(TesterType, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by tester type: {TesterType}");
+			}
+			return nodes[0];
 		}
 	}
 }
