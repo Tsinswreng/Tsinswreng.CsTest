@@ -23,6 +23,12 @@ public interface ITestNode{
 	but I design it as IList for be compatible with graph
 	")]
 	public IList<ITestNode> Parents {get;set;}
+	[Doc(@$"If true, direct children(non recursive) should be run in order,
+	e.g when you need to insert test data first,
+	then test db
+	and finally remove test data.
+	")]
+	public bool Ordered{get;set;}
 	
 }
 
@@ -35,6 +41,7 @@ public class TestNode : ITestNode{
 	public ITestCase? Data{get;set;}
 	public IList<ITestNode> Children {get;set;} = [];
 	public IList<ITestNode> Parents {get;set;} = [];
+	public bool Ordered{get;set;} = false;
 }
 
 public class TesterNode : TestNode, ITesterNode{
