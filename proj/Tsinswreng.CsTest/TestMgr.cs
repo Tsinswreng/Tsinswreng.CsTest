@@ -17,7 +17,7 @@ this can help you simplify your code
 		){
 			return (str Name, FnTest Fn) => {
 				var Case = new TestCase{
-					Name = Name,
+					UniqName = Name,
 					TesterType = TesterType,
 					TesteeType = TesteeType,
 					FnTest = Fn,

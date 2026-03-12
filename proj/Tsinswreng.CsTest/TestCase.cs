@@ -1,4 +1,5 @@
 using Tsinswreng.CsCore;
+using Tsinswreng.CsU128Id;
 
 namespace Tsinswreng.CsTest;
 
@@ -24,7 +25,7 @@ public interface ITestCase{
 	")]
 	public Type? TesteeType{get;set;}
 	
-	public str Name{get;set;}
+	public str UniqName{get;set;}
 	
 }
 
@@ -32,6 +33,6 @@ public class TestCase : ITestCase{
 	public FnTest FnTest{get;set;}
 	public Type? TesterType{get;set;}
 	public Type? TesteeType{get;set;}
-	public str Name{get;set;}
+	public str UniqName{get;set;} = U128Id.NewUlid().ToLow64Base();
 }
 

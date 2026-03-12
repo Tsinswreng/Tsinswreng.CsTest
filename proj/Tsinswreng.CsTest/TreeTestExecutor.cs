@@ -176,7 +176,7 @@ public static class ExtnTreeTestExecutor{
 			Console.WriteLine($"[CsTest] Total={summary.Total}, Passed={summary.Passed}, Failed={summary.Failed}, Elapsed={summary.Elapsed}");
 			foreach(var result in summary.Results.OrderBy(x => x.Order)){
 				var status = result.IsPassed ? "PASS" : "FAIL";
-				Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.Name} ({result.Elapsed})");
+				Console.WriteLine($"[{status}] {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
 				if(result.Exception is not null){
 					Console.WriteLine(result.Exception.ToString());
 				}

@@ -1,4 +1,5 @@
 using Tsinswreng.CsCore;
+using Tsinswreng.CsU128Id;
 
 namespace Tsinswreng.CsTest;
 
@@ -7,6 +8,9 @@ namespace Tsinswreng.CsTest;
 Running a node of test tree  is to run all its children test cases.
 ")]
 public interface ITestNode{
+	
+	public str UniqName{get;set;}
+	
 	[Doc(@$"Leaf node should hava {nameof(Data)}
 	
 	for non-leaf node, we suggest it should be null
@@ -24,6 +28,7 @@ public interface ITestNode{
 
 
 public class TestNode : ITestNode{
+	public str UniqName{get;set;} = U128Id.NewUlid().ToLow64Base();
 	public ITestCase? Data{get;set;}
 	public IList<ITestNode> Children {get;set;} = [];
 	public IList<ITestNode> Parents {get;set;} = [];
