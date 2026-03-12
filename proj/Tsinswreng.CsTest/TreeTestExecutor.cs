@@ -3,6 +3,7 @@ using Tsinswreng.CsCore;
 
 namespace Tsinswreng.CsTest;
 
+[Obsolete("配置項不存")]
 public sealed class OptTreeTestExecutor{
 	[Doc("Default is Environment.ProcessorCount")]
 	public int MaxDegreeOfParallelism { get; set; } = Environment.ProcessorCount;
@@ -40,16 +41,30 @@ public sealed class TestRunFailedException : Exception{
 	}
 }
 
-public interface ITreeTestExecutor{
-	public Task<TestRunSummary> RunAsync(
+public class OptTestExecutor{
+	public bool IsParallel = true;
+	public int MaxDegreeOfParallelism = Environment.ProcessorCount;
+	public obj? Arg = default;
+}
+
+public interface ITestExecutor{
+	[Obsolete("參數太多")]
+	public Task<TestRunSummary> Run(
 		ITestNode root,
 		obj? arg = null,
 		OptTreeTestExecutor? options = null,
 		CancellationToken cancellationToken = default
 	);
+	
+	public Task<TestRunSummary> Run(
+		IList<ITestNode> Nodes
+		,OptTestExecutor? Opt
+	);
+	
+
 }
 
-public sealed class TreeTestExecutor : ITreeTestExecutor{
+public sealed class TreeTestExecutor : ITestExecutor{
 	private sealed class WorkItem{
 		public required int Order { get; set; }
 		public required str NodePath { get; set; }
@@ -57,7 +72,7 @@ public sealed class TreeTestExecutor : ITreeTestExecutor{
 		public required ITestCase TestCase { get; set; }
 	}
 
-	public async Task<TestRunSummary> RunAsync(
+	public async Task<TestRunSummary> Run(
 		ITestNode root,
 		obj? arg = null,
 		OptTreeTestExecutor? options = null,
@@ -153,8 +168,8 @@ public static class ExtnTreeTestExecutor{
 			OptTreeTestExecutor? Opt = default,
 			CT Ct = default
 		){
-			ITreeTestExecutor executor = new TreeTestExecutor();
-			return executor.RunAsync(z, Arg, Opt, Ct);
+			ITestExecutor executor = new TreeTestExecutor();
+			return executor.Run(z, Arg, Opt, Ct);
 		}
 
 		[Doc("Run tests then do default consume: print summary and throw when failed")]
