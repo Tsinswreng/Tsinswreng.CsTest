@@ -60,4 +60,30 @@ public static class ExtnITestNode{
 			return R;
 		}
 	}
+	extension(ITestNode z){
+	[Doc(@$"Make a function to register `{nameof(FnTest)}`.
+	this can help you simplify your code
+	,without duplicately passing the same `{nameof(Type)}`
+	")]
+		public Func<
+			str, FnTest, nil
+		> MkFnRegisterTest(
+			Type TesterType
+			,Type TesteeType
+			,str UniqNamePrefix = ""
+		){
+			return (str UniqName, FnTest Fn) => {
+				var Case = new TestCase{
+					UniqName = UniqNamePrefix+UniqName,
+					TesterType = TesterType,
+					TesteeType = TesteeType,
+					FnTest = Fn,
+				};
+				z.Children.Add(new TestNode{
+					Data = Case,
+				});
+				return NIL;
+			};
+		}
+	}
 }
