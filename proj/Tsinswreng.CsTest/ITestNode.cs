@@ -85,5 +85,13 @@ public static class ExtnITestNode{
 				return NIL;
 			};
 		}
+		
+		public ITestFnRegister MkTestFnRegister(
+			Type TesterType
+			,Type TesteeType
+			,str UniqNamePrefix = ""
+		){
+			
+		}
 	}
 }
