@@ -32,9 +32,11 @@ public interface ITestNode{
 	
 }
 
+[Doc(@$"for {nameof(ITester)}")]
 public interface ITesterNode:ITestNode{
 	public Type? TesterType{get;set;}
 }
+
 
 public class TestNode : ITestNode{
 	public str UniqName{get;set;} = U128Id.NewUlid().ToLow64Base();
@@ -68,11 +70,11 @@ public static class ExtnITestNode{
 		}
 	}
 	extension(ITestNode z){
-	[Doc(@$"Make a function to register `{nameof(FnTest)}`.
-	this can help you simplify your code
-	,without duplicately passing the same `{nameof(Type)}`
-	")]
-	[Obsolete(@$"use {nameof(MkTestFnRegister)}")]
+		[Doc(@$"Make a function to register `{nameof(FnTest)}`.
+		this can help you simplify your code
+		,without duplicately passing the same `{nameof(Type)}`
+		")]
+		[Obsolete(@$"use {nameof(MkTestFnRegister)}")]
 		public Func<
 			str, FnTest, nil
 		> MkFnRegisterTest(

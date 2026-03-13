@@ -3,7 +3,8 @@ using Tsinswreng.CsCore;
 namespace Tsinswreng.CsTest;
 
 public interface ITestFnRegister{
-	public void Register(str UniqName, FnTest Fn);
+	public void RegisterOld(str UniqName, FnTest Fn);
+	
 }
 
 public class TestFnRegister : ITestFnRegister{
@@ -19,7 +20,7 @@ public class TestFnRegister : ITestFnRegister{
 		UniqNamePrefix = uniqNamePrefix;
 	}
 
-	public void Register(str UniqName, FnTest Fn){
+	public void RegisterOld(str UniqName, FnTest Fn){
 		var Case = new TestCase{
 			UniqName = UniqNamePrefix + UniqName,
 			TesterType = TesterType,
