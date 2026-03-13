@@ -136,6 +136,7 @@ public static class ExtnDiEtTestMgr{
 			return nodes[0];
 		}
 		
+		[Obsolete(@$"Use {nameof(GetNodesByTesteeType)}")]
 		public ITestNode GetNodeByTesteeType(Type TesteeType){
 			if(!z.TesteeType_TestNode.TryGetValue(TesteeType, out var nodes) || nodes.Count < 1){
 				throw new KeyNotFoundException($"Test node not found by testee type: {TesteeType}");
@@ -143,11 +144,26 @@ public static class ExtnDiEtTestMgr{
 			return nodes[0];
 		}
 		
+		[Obsolete(@$"Use {nameof(GetNodesByTesteeFnName)}")]
 		public ITestNode GetNodeByTesteeFnName(str TesteeFnName){
 			if(!z.TesteeFnName_TestNode.TryGetValue(TesteeFnName, out var nodes) || nodes.Count < 1){
 				throw new KeyNotFoundException($"Test node not found by testee fn name: {TesteeFnName}");
 			}
 			return nodes[0];
+		}
+		
+		public IList<ITestNode> GetNodesByTesteeType(Type TesteeType){
+			if(!z.TesteeType_TestNode.TryGetValue(TesteeType, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by testee type: {TesteeType}");
+			}
+			return nodes;
+		}
+		
+		public IList<ITestNode> GetNodesByTesteeFnName(str TesteeFnName){
+			if(!z.TesteeFnName_TestNode.TryGetValue(TesteeFnName, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by testee fn name: {TesteeFnName}");
+			}
+			return nodes;
 		}
 	}
 	
