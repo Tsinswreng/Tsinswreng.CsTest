@@ -100,6 +100,7 @@ public static class ExtnITestNode{
 		this can help you simplify your code
 		,without duplicately passing the same `{nameof(Type)}`
 		")]
+		[Obsolete]
 		public ITestFnRegister MkTestFnRegister(
 			Type TesterType
 			,Type TesteeType
@@ -107,5 +108,15 @@ public static class ExtnITestNode{
 		){
 			return new TestFnRegister(z, TesterType, TesteeType, UniqNamePrefix);
 		}
+		
+		public ITestFnRegister MkTestFnRegister(
+			Type TesterType
+			,IList<Type> TesteeTypes
+			,IList<str> TesteeFnNames
+			,str UniqNamePrefix = ""
+		){
+			
+		}
+		
 	}
 }
