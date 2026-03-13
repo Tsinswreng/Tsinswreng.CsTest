@@ -18,14 +18,30 @@ public interface ITestFnRegister{
 
 public class TestFnRegister : ITestFnRegister{
 	private readonly ITestNode Node;
-	private readonly Type TesterType;
-	private readonly Type TesteeType;
-	private readonly str UniqNamePrefix;
+	public Type TesterType{get;set;}
+	public IList<Type> TesteeTypes{get;set;}
+	public IList<str> TesteeFnNames{get;set;}
+	public str UniqNamePrefix{get;set;}
 
 	public TestFnRegister(ITestNode node, Type testerType, Type testeeType, str uniqNamePrefix){
 		Node = node;
 		TesterType = testerType;
-		TesteeType = testeeType;
+		TesteeTypes = [testeeType];
+		TesteeFnNames = [];
+		UniqNamePrefix = uniqNamePrefix;
+	}
+	
+	public TestFnRegister(
+		ITestNode node
+		,Type testerType
+		,IList<Type> testeeTypes
+		,IList<str> testeeFnNames
+		,str uniqNamePrefix
+	){
+		Node = node;
+		TesterType = testerType;
+		TesteeTypes = testeeTypes;
+		TesteeFnNames = testeeFnNames;
 		UniqNamePrefix = uniqNamePrefix;
 	}
 
@@ -33,7 +49,8 @@ public class TestFnRegister : ITestFnRegister{
 		var Case = new TestCase{
 			UniqName = UniqNamePrefix + UniqName,
 			TesterType = TesterType,
-			TesteeType = TesteeType,
+			TesteeTypes = TesteeTypes,
+			TesteeFnNames = TesteeFnNames,
 			FnTest = Fn,
 		};
 		Node.Children.Add(new TestNode{

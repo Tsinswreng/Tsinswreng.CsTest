@@ -115,7 +115,7 @@ public static class ExtnITestNode{
 			,IList<str> TesteeFnNames
 			,str UniqNamePrefix = ""
 		){
-			
+			return new TestFnRegister(z, TesterType, TesteeTypes, TesteeFnNames, UniqNamePrefix);
 		}
 		
 	}

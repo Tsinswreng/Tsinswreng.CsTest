@@ -16,14 +16,24 @@ public interface IDiEtTestMgr:ITester{
 	designed as IList is for future extension
 	")]
 	public IDictionary<str, IList<ITestNode>> UniqName_TestNode{get;set;}
+	
 	[Doc(@$"the value list should only contain 0 or 1 element,
 	designed as IList is for future extension
 	")]
 	public IDictionary<Type, IList<ITestNode>> TesterType_TestNode{get;set;}
+	
+	[Doc(@$"One To Many")]
+	public IDictionary<Type, IList<ITestNode>> TesteeType_TestNode{get;set;}
+	
+	[Doc(@$"One To Many")]
+	public IDictionary<str, IList<ITestNode>> TesteeFnName_TestNode{get;set;}
+	
 	[Doc(@$"Root TestNode of the (Sub)Tree")]
 	public ITestNode TestNode{get;set;}
+	
 	[Doc(@$"Functions to register types into {nameof(IServiceCollection)}")]
 	public IList<Func<IServiceCollection, nil>> DiFns{get;set;}
+	
 	[Doc(@$"Functions to retrieve {nameof(ITester)}
 	from {nameof(IServiceProvider)} and register it into {nameof(TestNode)}
 	")]
@@ -36,6 +46,8 @@ public abstract class DiEtTestMgr:IDiEtTestMgr{
 	}
 	public IDictionary<str, IList<ITestNode>> UniqName_TestNode{get;set;} = new Dictionary<str, IList<ITestNode>>();
 	public IDictionary<Type, IList<ITestNode>> TesterType_TestNode{get;set;} = new Dictionary<Type, IList<ITestNode>>();
+	public IDictionary<Type, IList<ITestNode>> TesteeType_TestNode{get;set;} = new Dictionary<Type, IList<ITestNode>>();
+	public IDictionary<str, IList<ITestNode>> TesteeFnName_TestNode{get;set;} = new Dictionary<str, IList<ITestNode>>();
 	public ITestNode TestNode{get;set;} = new TestNode();
 	public IList<Func<IServiceCollection, nil>> DiFns{get;set;} = [];
 	public IList<Func<IServiceProvider, ITestNode, nil>> RegisterTestFns{get;set;} = [];
@@ -76,6 +88,7 @@ public static class ExtnDiEtTestMgr{
 				z.UniqName_TestNode.Add(node.UniqName, [node]);
 				z.TesterType_TestNode.Add(typeof(T), [node]);
 				t.RegisterTestsInto(node);
+				IndexTesteeForSubtree(z, node);
 				return NIL;
 			});
 		}
@@ -121,6 +134,74 @@ public static class ExtnDiEtTestMgr{
 				throw new KeyNotFoundException($"Test node not found by tester type: {TesterType}");
 			}
 			return nodes[0];
+		}
+		
+		public ITestNode GetNodeByTesteeType(Type TesteeType){
+			if(!z.TesteeType_TestNode.TryGetValue(TesteeType, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by testee type: {TesteeType}");
+			}
+			return nodes[0];
+		}
+		
+		public ITestNode GetNodeByTesteeFnName(str TesteeFnName){
+			if(!z.TesteeFnName_TestNode.TryGetValue(TesteeFnName, out var nodes) || nodes.Count < 1){
+				throw new KeyNotFoundException($"Test node not found by testee fn name: {TesteeFnName}");
+			}
+			return nodes[0];
+		}
+	}
+	
+	private static void IndexTesteeForSubtree(IDiEtTestMgr z, ITestNode Root){
+		foreach(var node in WalkNodes(Root)){
+			var data = node.Data;
+			if(data is null){
+				continue;
+			}
+			if(data.TesteeTypes is not null){
+				foreach(var t in data.TesteeTypes){
+					if(t is null){
+						continue;
+					}
+					AddNodeToDict(z.TesteeType_TestNode, t, node);
+				}
+			}
+			if(data.TesteeFnNames is not null){
+				foreach(var n in data.TesteeFnNames){
+					if(string.IsNullOrWhiteSpace(n)){
+						continue;
+					}
+					AddNodeToDict(z.TesteeFnName_TestNode, n, node);
+				}
+			}
+		}
+	}
+	
+	private static IEnumerable<ITestNode> WalkNodes(ITestNode Root){
+		var stack = new Stack<ITestNode>();
+		stack.Push(Root);
+		while(stack.Count > 0){
+			var cur = stack.Pop();
+			yield return cur;
+			if(cur.Children is null){
+				continue;
+			}
+			for(int i = cur.Children.Count - 1; i >= 0; i--){
+				stack.Push(cur.Children[i]);
+			}
+		}
+	}
+	
+	private static void AddNodeToDict<TKey>(
+		IDictionary<TKey, IList<ITestNode>> Dict
+		,TKey Key
+		,ITestNode Node
+	) where TKey : notnull{
+		if(!Dict.TryGetValue(Key, out var list)){
+			list = [];
+			Dict.Add(Key, list);
+		}
+		if(!list.Contains(Node)){
+			list.Add(Node);
 		}
 	}
 }
