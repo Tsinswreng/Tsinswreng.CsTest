@@ -1,6 +1,6 @@
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 [Doc(@$"Function to test
 Designed as async function to be compatible for both sync and async code.

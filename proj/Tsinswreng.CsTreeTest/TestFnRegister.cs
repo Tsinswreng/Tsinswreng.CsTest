@@ -1,6 +1,6 @@
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 public interface ITestFnRegister{
 	[Doc(@$" every time you call `{nameof(Register)}`, it should always use newest options.

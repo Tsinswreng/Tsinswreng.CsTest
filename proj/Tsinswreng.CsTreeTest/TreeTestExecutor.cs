@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 public sealed class TestCaseRunResult{
 	public required int Order { get; set; }

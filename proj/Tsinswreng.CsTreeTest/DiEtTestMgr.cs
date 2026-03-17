@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 [Doc(@$"DependencyInjection and Test Manager.
 Own a {nameof(TestNode)}

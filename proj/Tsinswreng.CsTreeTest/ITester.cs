@@ -1,6 +1,6 @@
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 [Doc(@$"classes impl this interface means
 the class can register tests

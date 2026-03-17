@@ -1,7 +1,7 @@
 using Tsinswreng.CsCore;
 using Tsinswreng.CsU128Id;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 [Doc(@$"Node of test tree.
 

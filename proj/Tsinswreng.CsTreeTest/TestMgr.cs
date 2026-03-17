@@ -1,6 +1,6 @@
 using Tsinswreng.CsCore;
 
-namespace Tsinswreng.CsTest;
+namespace Tsinswreng.CsTreeTest;
 
 
 public static class ExtnITestMgr{
