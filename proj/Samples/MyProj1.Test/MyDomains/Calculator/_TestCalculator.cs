@@ -1,28 +1,27 @@
+//we suggest one tester class corresponds to one testee class.
+// and put different tester classes in separates folders.
+//now we are in Calculator/ , this is only for `TestCalculator`
 using Tsinswreng.CsTreeTest;
 
 namespace MyProj1.Test.MyDomains.Calculator;
 
-/// <summary>
-/// 测试计算器服务
-/// 使用分部类形式组织各个函数的测试
-/// </summary>
+//Use partial class. this is the main part. the file name of main part should start with _
+// each part of the class should only test one method
+// the main part should not do test but assemble the test cases in other parts.
 public partial class TestCalculator : ITester {
-	
-	private Calculator _calculator;
-
+	Calculator Calculator;
 	public TestCalculator() {
-		_calculator = new Calculator();
+		//you can also use dependency injection
+		Calculator = new Calculator();
 	}
-
+	
 	public ITestNode RegisterTestsInto(ITestNode? Test) {
 		Test ??= new TestNode();
-		Test.Ordered = true; // 按顺序执行子测试
+		//default is false, if set to true, the tests in this node will run in order.
+		Test.Ordered = false;
 
 		RegisterAdd(Test);
-		RegisterSubtract(Test);
-		RegisterMultiply(Test);
-		RegisterDivide(Test);
-
+		RegisterTryIntDivide(Test);
 		return Test;
 	}
 }

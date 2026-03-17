@@ -1,75 +1,29 @@
 using Tsinswreng.CsTreeTest;
 
 namespace MyProj1.Test.MyDomains.Calculator;
-
+// each part should only mainly test one function. in this part we test Add
 public partial class TestCalculator {
-	
 	public void RegisterAdd(ITestNode Node) {
 		var register = Node.MkTestFnRegister(
-			typeof(TestCalculator),
-			[typeof(Calculator)],
-			[nameof(Calculator.Add)],
-			"Add"
+			typeof(TestCalculator), // tester type
+			[typeof(Calculator)], // testee types
+			[nameof(MyDomains.Calculator.Calculator.Add)], // testee fn names, must use nameof()
+			"YourTestNamePrefix" // optional
 		);
-
 		var R = register.Register;
-
-		R("正数相加", async (o) => {
-			// Arrange
-			int a = 5;
-			int b = 3;
-
-			// Act
-			int result = _calculator.Add(a, b);
-
-			// Assert
-			if (result != 8) {
-				throw new Exception($"Expected 8 but got {result}");
+		R("Add positive numbers", async (o) => {
+			var r = Calculator.Add(5, 3);
+			if (r != 8) {
+				throw new Exception($"Expected 8 but got {r}");
 			}
 			return null;
 		});
-
-		R("负数相加", async (o) => {
-			// Arrange
-			int a = -5;
-			int b = -3;
-
-			// Act
-			int result = _calculator.Add(a, b);
-
-			// Assert
-			if (result != -8) {
-				throw new Exception($"Expected -8 but got {result}");
-			}
-			return null;
-		});
-
-		R("正数和负数相加", async (o) => {
-			// Arrange
-			int a = 10;
-			int b = -3;
-
-			// Act
-			int result = _calculator.Add(a, b);
-
-			// Assert
-			if (result != 7) {
-				throw new Exception($"Expected 7 but got {result}");
-			}
-			return null;
-		});
-
-		R("零值相加", async (o) => {
-			// Arrange
-			int a = 0;
-			int b = 5;
-
-			// Act
-			int result = _calculator.Add(a, b);
-
-			// Assert
-			if (result != 5) {
-				throw new Exception($"Expected 5 but got {result}");
+		//you can change the props of `register` here and then you can still use `R` directly
+		//e.g. register.UniqNamePrefix = "NewPrefix";
+		R("Add positive and negative numbers", async (o) => {
+			var r = Calculator.Add(5, -3);
+			if (r != 2) {
+				throw new Exception($"Expected 2 but got {r}");
 			}
 			return null;
 		});
