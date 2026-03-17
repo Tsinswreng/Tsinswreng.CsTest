@@ -68,7 +68,7 @@ public static class ExtnDiEtTestMgr{
 			where T:class, ITester
 		{
 			z.DiFns.Add((SvcC)=>{
-				SvcC.AddSingleton<T>();
+				SvcC.Add(ServiceDescriptor.Singleton(typeof(T), typeof(T)));
 				return NIL;
 			});
 			z.RegisterTestFns.Add((SvcP, TestNode)=>{
@@ -106,10 +106,7 @@ public static class ExtnDiEtTestMgr{
 			IServiceCollection SvcColct
 			,IServiceProvider SvcProvdr
 		){
-			foreach(var fn in z.DiFns){
-				fn(SvcColct);
-			}
-			SvcProvdr = SvcColct.BuildServiceProvider();
+			_ = SvcColct;
 			foreach(var fn in z.RegisterTestFns){
 				fn(SvcProvdr, z.TestNode);
 			}
@@ -117,8 +114,14 @@ public static class ExtnDiEtTestMgr{
 		}
 
 		[Doc(@$"Init {nameof(IServiceCollection)} then build and return {nameof(IServiceProvider)}")]
-		public IServiceProvider InitSvc(IServiceCollection SvcColct){
-			IServiceProvider SvcProvdr = SvcColct.BuildServiceProvider();
+		public IServiceProvider InitSvc(
+			IServiceCollection SvcColct
+			,Func<IServiceCollection, IServiceProvider> BuildSvcProvider
+		){
+			foreach(var fn in z.DiFns){
+				fn(SvcColct);
+			}
+			IServiceProvider SvcProvdr = BuildSvcProvider(SvcColct);
 			return z.InitSvc(SvcColct, SvcProvdr);
 		}
 		
