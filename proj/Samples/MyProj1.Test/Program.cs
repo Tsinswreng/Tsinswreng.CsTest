@@ -1,2 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using MyProj1.Test;
+using Tsinswreng.CsTreeTest;
+
+var mgr = MyProj1TestMgr.Inst;
+ITestExecutor executor = new TreeTestExecutor();
+await executor.RunEtPrint(mgr.TestNode);
