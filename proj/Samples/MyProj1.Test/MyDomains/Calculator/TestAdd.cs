@@ -6,8 +6,8 @@ public partial class TestCalculator {
 	public void RegisterAdd(ITestNode Node) {
 		var register = Node.MkTestFnRegister(
 			typeof(TestCalculator), // tester type
-			[typeof(Calculator)], // testee types
-			[nameof(MyDomains.Calculator.Calculator.Add)], // testee fn names, must use nameof()
+			[typeof(ICalculator)], // testee types
+			[nameof(MyDomains.Calculator.ICalculator.Add)], // testee fn names, must use nameof()
 			"YourTestNamePrefix" // optional
 		);
 		var R = register.Register;

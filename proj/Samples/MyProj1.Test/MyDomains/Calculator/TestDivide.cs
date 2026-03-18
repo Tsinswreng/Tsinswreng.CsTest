@@ -6,8 +6,8 @@ public partial class TestCalculator {
 	public void RegisterTryIntDivide(ITestNode Node) {
 		var register = Node.MkTestFnRegister(
 			typeof(TestCalculator),
-			[typeof(Calculator)],
-			[nameof(MyDomains.Calculator.Calculator.TryIntDivide)],
+			[typeof(ICalculator)],
+			[nameof(MyDomains.Calculator.ICalculator.TryIntDivide)],
 			"Divide"
 		);
 
