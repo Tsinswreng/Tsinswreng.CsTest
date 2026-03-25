@@ -8,10 +8,10 @@ namespace MyProj1.Test;
 // and register all tester below
 public class MyProj1TestMgr : DiEtTestMgr {
 	public static MyProj1TestMgr Inst = new();
-	public override ITestNode RegisterTestsInto(ITestNode? Test) {
-		Test = this.TestNode;
+	public override ITestNode RegisterTestsInto(ITestNode? Node) {
+		Node = this.TestNode;
 		// 注册各个领域的测试器
 		this.RegisterTester<TestCalculator>();
-		return Test;
+		return Node;
 	}
 }
