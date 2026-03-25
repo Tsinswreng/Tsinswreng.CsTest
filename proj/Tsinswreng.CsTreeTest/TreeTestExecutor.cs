@@ -186,7 +186,10 @@ public sealed class TreeTestExecutor : ITestExecutor{
 			return output;
 		}
 
-		if(node.Ordered){
+		// If IsParallelRecursive is true, force all children to be treated as Ordered
+		var shouldOrder = node.Ordered || node.IsParallelRecursive;
+		
+		if(shouldOrder){
 			for(var i = 0; i < node.Children.Count; i++){
 				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order);
 				for(var j = 0; j < childStages.Count; j++){

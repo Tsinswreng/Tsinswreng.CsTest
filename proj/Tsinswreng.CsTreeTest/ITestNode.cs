@@ -24,6 +24,7 @@ public interface ITestNode{
 	")]
 	public IList<ITestNode> Parents {get;set;}
 	[Doc(@$"If true, direct children(non recursive) should be run in order,
+	{nameof(Ordered)} != Parallel. tests may be run in different thread.
 	e.g when you need to insert test data first,
 	then test db
 	and finally remove test data.
@@ -49,6 +50,7 @@ public class TestNode : ITestNode{
 	public IList<ITestNode> Children {get;set;} = [];
 	public IList<ITestNode> Parents {get;set;} = [];
 	public bool Ordered{get;set;} = false;
+	public bool IsParallelRecursive{get;set;} = false;
 }
 
 public class TesterNode : TestNode, ITesterNode{
