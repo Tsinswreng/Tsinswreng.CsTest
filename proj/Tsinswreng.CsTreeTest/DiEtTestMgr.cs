@@ -94,9 +94,15 @@ public static class ExtnDiEtTestMgr{
 		}
 		[Doc(@$"Register another {nameof(IDiEtTestMgr)} as self's subnode")]
 		public void RegisterSubMgr(IDiEtTestMgr SubMgr){
-			SubMgr.TestNode = z.TestNode.NewChild();
+			var oldRoot = SubMgr.TestNode;
+			var mountedRoot = z.TestNode.NewChild();
+			mountedRoot.Ordered = oldRoot.Ordered;
+			mountedRoot.IsParallelRecursive = oldRoot.IsParallelRecursive;
+			SubMgr.TestNode = mountedRoot;
 			z.DiFns.AddRange(SubMgr.DiFns);
-			z.RegisterTestFns.AddRange(SubMgr.RegisterTestFns);
+			foreach(var subFn in SubMgr.RegisterTestFns){
+				z.RegisterTestFns.Add((SvcP, _)=>subFn(SvcP, SubMgr.TestNode));
+			}
 		}
 		
 		[Doc(@$"Init {nameof(IServiceCollection)} and {nameof(IServiceProvider)}

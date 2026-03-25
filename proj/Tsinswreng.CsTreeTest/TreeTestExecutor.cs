@@ -56,6 +56,7 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		public required str NodePath { get; set; }
 		public required ITestNode Node { get; set; }
 		public required ITestCase TestCase { get; set; }
+		public required bool ShouldNotParallelize { get; set; }
 	}
 
 	public Task<TestRunSummary> Run(
@@ -87,9 +88,18 @@ public sealed class TreeTestExecutor : ITestExecutor{
 	){
 		if(isParallel){
 			foreach(var stage in workStages){
-				await Parallel.ForEachAsync(stage, parallelOptions, async (item, _) => {
+				var parallelItems = stage.Where(x => !x.ShouldNotParallelize).ToList();
+				var sequentialItems = stage.Where(x => x.ShouldNotParallelize).ToList();
+				
+				if(parallelItems.Count > 0){
+					await Parallel.ForEachAsync(parallelItems, parallelOptions, async (item, _) => {
+						await ExecuteItem(item, results, arg);
+					});
+				}
+				
+				foreach(var item in sequentialItems){
 					await ExecuteItem(item, results, arg);
-				});
+				}
 			}
 		}
 		else{
@@ -151,7 +161,7 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		var output = new List<IList<WorkItem>>();
 		var nodeStages = new List<IList<WorkItem>>();
 		for(var i = 0; i < nodes.Count; i++){
-			nodeStages.AddRange(CollectNodeStages(nodes[i], $"{i}", ref order));
+			nodeStages.AddRange(CollectNodeStages(nodes[i], $"{i}", ref order, false));
 		}
 
 		for(var i = 0; i < nodeStages.Count; i++){
@@ -167,31 +177,35 @@ public sealed class TreeTestExecutor : ITestExecutor{
 	private static IList<IList<WorkItem>> CollectNodeStages(
 		ITestNode node,
 		str path,
-		ref int order
+		ref int order,
+		bool parentIsParallelRecursive
 	){
 		var output = new List<IList<WorkItem>>();
 
 		if(node.Data is ITestCase testCase){
+
 			output.Add([
 				new WorkItem{
 					Order = order++,
 					NodePath = path,
 					Node = node,
 					TestCase = testCase,
+					ShouldNotParallelize = parentIsParallelRecursive || node.IsParallelRecursive,
 				}
 			]);
 		}
-
 		if(node.Children.Count == 0){
 			return output;
 		}
 
-		// If IsParallelRecursive is true, force all children to be treated as Ordered
-		var shouldOrder = node.Ordered || node.IsParallelRecursive;
+		// If parent has IsParallelRecursive or current node has it, force sequential execution
+		var shouldOrder = node.Ordered || node.IsParallelRecursive || parentIsParallelRecursive;
+		// Pass down the IsParallelRecursive flag to children
+		var childIsParallelRecursive = node.IsParallelRecursive || parentIsParallelRecursive;
 		
 		if(shouldOrder){
 			for(var i = 0; i < node.Children.Count; i++){
-				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order);
+				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order, childIsParallelRecursive);
 				for(var j = 0; j < childStages.Count; j++){
 					output.Add(childStages[j]);
 				}
@@ -200,7 +214,7 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		else{
 			var mergedChildStages = new List<IList<WorkItem>>();
 			for(var i = 0; i < node.Children.Count; i++){
-				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order);
+				var childStages = CollectNodeStages(node.Children[i], $"{path}/{i}", ref order, childIsParallelRecursive);
 				for(var j = 0; j < childStages.Count; j++){
 					EnsureStage(mergedChildStages, j);
 					for(var k = 0; k < childStages[j].Count; k++){
@@ -230,14 +244,15 @@ public sealed class TreeTestExecutor : ITestExecutor{
 		ref int order
 	){
 		if(node.Data is ITestCase testCase){
+
 			output.Add(new WorkItem{
 				Order = order++,
 				NodePath = path,
 				Node = node,
 				TestCase = testCase,
+				ShouldNotParallelize = false,
 			});
 		}
-
 		for(var i = 0; i < node.Children.Count; i++){
 			Dfs(node.Children[i], $"{path}/{i}", output, ref order);
 		}
