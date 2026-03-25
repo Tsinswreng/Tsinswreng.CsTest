@@ -29,6 +29,11 @@ public interface ITestNode{
 	and finally remove test data.
 	")]
 	public bool Ordered{get;set;}
+	[Doc(@$"default is false.
+	if true, the node and its all recursive children should be
+	run in the same thread
+	")]
+	public bool IsParallelRecursive{get;set;}
 	
 }
 
