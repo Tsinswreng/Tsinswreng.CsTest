@@ -292,8 +292,10 @@ public static class ExtnTreeTestExecutor{
 
 	private static void WriteSummary(TestRunSummary summary){
 		foreach(var result in summary.Results.OrderBy(x => x.Order)){
-			var status = result.IsPassed ? "PASS" : "FAIL";
-			WriteWithColor($"[{status}]", result.IsPassed ? ConsoleColor.Green : ConsoleColor.Red);
+			if(result.IsPassed){
+				continue;
+			}
+			WriteWithColor("[FAIL]", ConsoleColor.Red);
 			Console.WriteLine($" {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
 			if(result.Exception is not null){
 				WriteLineWithColor(result.Exception.ToString(), ConsoleColor.DarkRed);
