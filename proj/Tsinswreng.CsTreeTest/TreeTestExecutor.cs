@@ -277,7 +277,7 @@ public static class ExtnTreeTestExecutor{
 			ITestNode Root,
 			obj? Arg = default,
 			OptTestExecutor? Opt = default,
-			bool ThrowOnFailed = true
+			bool ThrowOnFailed = false
 		){
 			Opt ??= new OptTestExecutor();
 			Opt.Arg = Arg;
