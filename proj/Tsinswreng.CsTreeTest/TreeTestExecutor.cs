@@ -295,8 +295,9 @@ public static class ExtnTreeTestExecutor{
 			if(result.IsPassed){
 				continue;
 			}
+			var testerName = result.TestCase.TesterType?.Name ?? "UnknownTester";
 			WriteWithColor("[FAIL]", ConsoleColor.Red);
-			Console.WriteLine($" {result.NodePath} {result.TestCase.UniqName} ({result.Elapsed})");
+			Console.WriteLine($" {testerName}/{result.TestCase.UniqName} ({result.Elapsed})");
 			if(result.Exception is not null){
 				WriteLineWithColor(result.Exception.ToString(), ConsoleColor.DarkRed);
 			}
